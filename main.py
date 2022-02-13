@@ -16,17 +16,20 @@ class Topic:
 
     # attributed to each other
 
-    def __getattr__(self, item):  # This sets up how I'll be able to call to get a topic's information
-        match item:
-            case 'name':
-                return self.name  # essentially, if I call topic.__getattr__('name'), it'll give me the topic's name
-                # in a str format.
-            case 'questions':
-                return self.questions.items()  # Replacing name with 'questions' will give me the topic's dictionary
-                # of questions and answers
 
 
-def main():
+    # def __getattr__(self, item):  # This sets up how I'll be able to call to get a topic's information
+    #     match item:
+    #         case 'name':
+    #             return self.name  # essentially, if I call topic.__getattr__('name'), it'll give me the topic's name
+    #             # in a str format.
+    #         case 'questions':
+    #             return self.questions.items()  # Replacing name with 'questions' will give me the topic's dictionary
+    #             # of questions and answers
+
+
+
+def generate_question_bank():
     topicList = []
     # here are examples of Topics. Each key in the dictionaries are questions, with their values being the answer.
     # I also save the topic's name in a str format, to make printing the topic name easier.
@@ -43,10 +46,21 @@ def main():
                             'What was the first human-made object to leave the solar system?': 'Voyager 1'})
     topicList.append(space)
 
+    return topicList
+
+
+
+def main():
+
+    # there is a lot of code in the main function - could it be separated into smaller functions? 
+    # for example, deal with creating your topic list in a function 
+    topicList = generate_question_bank()
+
+    # If you have "sections" these can often be separated into a function 
     # This section handles asking the user for a topic selection.
     choices = []
-    for v in topicList:  # this loop finds adds all the topic names to a list, to then be displayed to the user.
-        choices.append(v.name.lower())  # the names are saved in lower case, for comparison purposes
+    for correct_answer in topicList:  # this loop finds adds all the topic names to a list, to then be displayed to the user.
+        choices.append(correct_answer.name.lower())  # the names are saved in lower case, for comparison purposes
     print('What topic would you like questions on? Your choices are: ', end='')
     print(*choices, sep=", ", end=": ")  # All this formatting is to make the list get printed out cleanly.
     # All without needing to write another loop
@@ -54,34 +68,48 @@ def main():
 
     # This section determines if the chosen topic exists in the list of topics. If so, it saves the topic selection
     topic = ''
-    while not choices.__contains__(choice):
+
+    while not choice in choices:  # the in operator calls __contains__ behind the scenes. 
+        # you might override __contains__ for your own custom class, but you'll never call it directly in code 
+
+    # while not choices.__contains__(choice):
+
         # this loop holds the user hostage until their input matches an available option
         print('That is not a valid topic. Your choices are: ', end='')
         print(*choices, sep=", ", end=": ")
         choice = input().lower().strip()
-    for v in topicList:  # After the user gets past validation, this loop will find and save the Topic (not topic name)
+
+    for correct_answer in topicList:  # After the user gets past validation, this loop will find and save the Topic (not topic name)
         # That they chose. Gotta do this because we've been comparing strings up till now, but Topics aren't strings
-        if v.name == choice:
-            topic = v
+        if correct_answer.name == choice:
+            topic = correct_answer
 
     # This section handles the asking of questions, as well as score tracking. Basically this is the game part.
     total_score = 0
-    for k, v in topic.__getattr__('questions'):  # This loop extracts questions and answers for the topic.
-        print(k)  # Here the dictionary key (question) is asked. "v" (value) is the correct answer
+
+
+    # and you could have another function for the actual quiz part 
+    
+    for question, correct_answer in topic.questions.items():  # This loop extracts questions and answers for the topic.
+        print(question)  # Here the dictionary key (question) is asked. "v" (value) is the correct answer
+        # or, use more descriptive variable names and you don't need the comment above 
         answer = input('Enter your answer: ')
-        if answer.lower() == str.lower(v):  # The inputted answer is then compared to the correct answer (v)
+        # you can handle lowercasing in the same way for both the answer and correct answer
+        if answer.lower() == correct_answer.lower():  # The inputted answer is then compared to the correct answer (v)
             print('Correct!')
             total_score += 1
         else:
-            print('Sorry, the answer is ' + v + '.')
+            print('Sorry, the answer is ' + correct_answer + '.')
 
     # This section handles final scoring and game wrap up.
+    # and another function for displaying results 
     print('End of quiz!')
-    print(f'Your total score on {topic.__getattr__("name")} questions is {total_score} out of '
-          f'{topic.__getattr__("questions").__len__()}.')
+    print(f'Your total score on {topic.name} questions is {total_score} out of '
+          f'{len(topic.questions)}.')   # another magic method - use len(questions), much simpler
     # "{topic.__getattr__("name")}" is to retrieve the topic name in str form.
-    if total_score == topic.__getattr__("questions").__len__():
+    if total_score == len(topic.questions):
         print('You got all the answers correct!')
+
 # "{topic.__getattr__("questions").__len__()}" retrieves the length of the Topic's dictionary to find out how many
 # Questions the Topic had.
 
